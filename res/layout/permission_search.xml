@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal" >
+
     <SearchView
         android:id="@+id/searchPermission"
         android:layout_width="match_parent"
@@ -11,5 +12,6 @@
         android:iconifiedByDefault="false"
         android:imeOptions="actionSearch|flagNoEnterAction|flagNoExtractUi"
         android:inputType="textFilter"
-        android:queryHint="name or description" />
+        android:queryHint="@string/perms_searchhint" />
+
 </LinearLayout>

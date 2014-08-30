@@ -1,106 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tabHost"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="?android:attr/scrollbarSize"
-    android:paddingRight="?android:attr/scrollbarSize" >
-    <LinearLayout
+    android:layout_height="match_parent" >
+
+    <ImageButton
+        android:id="@+id/btnFilter"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/filter_title"
+        android:src="@android:drawable/ic_menu_view" />
+
+    <ImageButton
+        android:id="@+id/btnPermsFilter"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_toRightOf="@id/btnFilter"
+        android:contentDescription="@string/perms_title"
+        android:src="@android:drawable/ic_lock_idle_lock" />
+
+    <SearchView
+        android:id="@+id/searchApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/btnPermsFilter"
+        android:focusable="false"
+        android:iconifiedByDefault="false"
+        android:imeOptions="actionSearch|flagNoEnterAction|flagNoExtractUi"
+        android:inputType="textFilter"
+        android:queryHint="@string/app_searchhint" />
+
+    <ListView
+        android:id="@+id/lstApps"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="5dp" >
-        <TabWidget
-            android:id="@android:id/tabs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <FrameLayout
-            android:id="@android:id/tabcontent"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-            <RelativeLayout
-                android:id="@+id/tab1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-                <ImageButton
-                    android:id="@+id/btnFilter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_view"
-                    android:contentDescription="Filter"/>
-                <ImageButton
-                    android:id="@+id/btnPermsFilter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/btnFilter"
-                    android:src="@android:drawable/ic_lock_lock"
-                    android:contentDescription="Permissions"/>
-                <SearchView
-                    android:id="@+id/searchApp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/btnPermsFilter"
-                    android:focusable="false"
-                    android:iconifiedByDefault="false"
-                    android:imeOptions="actionSearch|flagNoEnterAction|flagNoExtractUi"
-                    android:inputType="textFilter"
-                    android:queryHint="name or package" />
-                <ListView
-                    android:id="@+id/lstApps"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/searchApp"
-                    android:divider="@android:color/holo_blue_dark"
-                    android:dividerHeight="1dp"
-                    android:fadingEdge="vertical"
-                    android:fastScrollEnabled="true"
-                    android:scrollbars="vertical"
-                    android:textFilterEnabled="true" />
-            </RelativeLayout>
-            <ScrollView
-                android:id="@+id/tab2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" >
-                    <TextView
-                        android:id="@+id/about_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/about_app"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="16dp"
-                        android:text="This mod allows certain configurations to be changed on a per-app basis, without needing to edit APKs:
-\n- density / dpi
-\n- font scale
-\n- fake screen size for resources loading
-\n- locale (language)
-\n- fullscreen mode
-\n- hide title bar
-\n- keep screen on while app is visible
-\n- force orientation (portrait/landscape/auto)
-\n- stay resident in memory
-\n- insistent notifications (loop the sound)
-\n- revoke permissions" />
-                    <TextView
-                        android:id="@+id/version"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="20dp"
-                        android:text="Version: " />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="16dp"
-                        android:text="Note: Although the configuration panels can be used as-is, they will only affect the apps if the Xposed framework is installed and if this module is enabled in its configuration!"
-                        android:textColor="@android:color/holo_red_dark" />
-                </LinearLayout>
-            </ScrollView>
-        </FrameLayout>
-   	</LinearLayout>
-</TabHost>
+        android:layout_below="@id/searchApp"
+        android:divider="@android:color/holo_blue_dark"
+        android:dividerHeight="1dp"
+        android:fadingEdge="vertical"
+        android:fastScrollEnabled="true"
+        android:scrollbars="vertical"
+        android:textFilterEnabled="true" />
+
+</RelativeLayout>

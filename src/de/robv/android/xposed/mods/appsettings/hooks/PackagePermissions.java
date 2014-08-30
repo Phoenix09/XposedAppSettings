@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.os.Build;
 import android.util.Log;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -54,7 +55,7 @@ public class PackagePermissions extends BroadcastReceiver {
 				}
 			});
 
-			// if the user has disabled certain permissions for an app, do as if the hadn't requested them 
+			// if the user has disabled certain permissions for an app, do as if the hadn't requested them
 			findAndHookMethod(clsPMS, "grantPermissionsLPw", "android.content.pm.PackageParser$Package", boolean.class,
 					new XC_MethodHook() {
 				@SuppressWarnings("unchecked")
@@ -78,8 +79,8 @@ public class PackagePermissions extends BroadcastReceiver {
 						else
 							// you requested those internet permissions? I didn't read that, sorry
 							Log.w(Common.TAG, "Not granting permission " + perm
-	                                + " to package " + pkgName
-	                                + " because you think it should not have it");
+									+ " to package " + pkgName
+									+ " because you think it should not have it");
 					}
 
 					setObjectField(param.args[0], "requestedPermissions", newRequestedPermissions);
@@ -124,7 +125,10 @@ public class PackagePermissions extends BroadcastReceiver {
 			if (killApp) {
 				try {
 					ApplicationInfo appInfo = (ApplicationInfo) getObjectField(pkgInfo, "applicationInfo");
-					callMethod(pmSvc, "killApplication", pkgName, appInfo.uid);
+					if (Build.VERSION.SDK_INT <= 18)
+						callMethod(pmSvc, "killApplication", pkgName, appInfo.uid);
+					else
+						callMethod(pmSvc, "killApplication", pkgName, appInfo.uid, "apply App Settings");
 				} catch (Throwable t) {
 					XposedBridge.log(t);
 				}

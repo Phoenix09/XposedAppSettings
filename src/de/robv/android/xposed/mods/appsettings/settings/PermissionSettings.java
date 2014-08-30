@@ -44,7 +44,7 @@ public class PermissionSettings {
 	public PermissionSettings(Activity owner, String pkgName, boolean revoking, Set<String> disabledPermissions) throws NameNotFoundException {
 		dialog = new Dialog(owner);
 		dialog.setContentView(R.layout.permissions_dialog);
-		dialog.setTitle("Permissions");
+		dialog.setTitle(R.string.perms_title);
 		dialog.setCancelable(true);
 		dialog.setOwnerActivity(owner);
 
@@ -142,9 +142,7 @@ public class PermissionSettings {
 		PackageInfo pkgInfo = pm.getPackageInfo(pkgName, PackageManager.GET_PERMISSIONS);
 		if (pkgInfo.sharedUserId != null) {
 			Switch swtRevoke = (Switch) dialog.findViewById(R.id.swtRevokePerms);
-			swtRevoke.setEnabled(false);
-			swtRevoke.setChecked(false);
-			swtRevoke.setText("Shared packages not yet supported");
+			swtRevoke.setText(R.string.perms_shared_warning);
 			swtRevoke.setTextColor(Color.RED);
 		}
 		String[] permissions = pkgInfo.requestedPermissions;
