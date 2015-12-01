@@ -2,6 +2,7 @@ package de.robv.android.xposed.mods.appsettings.hooks;
 
 import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
 import static de.robv.android.xposed.XposedBridge.hookMethod;
+import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.findMethodExact;
@@ -40,12 +41,13 @@ public class Activities {
 	private static final String PROP_LEGACY_MENU = "AppSettings-LegacyMenu";
 	private static final String PROP_ORIENTATION = "AppSettings-Orientation";
 
-	private static int FLAG_NEEDS_MENU_KEY = getStaticIntField(WindowManager.LayoutParams.class, "FLAG_NEEDS_MENU_KEY");
-
+	private static int FLAG_NEEDS_MENU_KEY = Build.VERSION.SDK_INT >= 22 ? 0 : getStaticIntField(WindowManager.LayoutParams.class, "FLAG_NEEDS_MENU_KEY");
+    private static String CLASS_PHONEWINDOW = Build.VERSION.SDK_INT >= 23 ? "com.android.internal.policy.PhoneWindow" : "com.android.internal.policy.impl.PhoneWindow";
+	private static String CLASS_PHONEWINDOW_DECORVIEW = Build.VERSION.SDK_INT >= 23 ? "com.android.internal.policy.PhoneWindow.DecorView" : "com.android.internal.policy.impl.PhoneWindow.DecorView";
 	public static void hookActivitySettings() {
 		try {
-			findAndHookMethod("com.android.internal.policy.impl.PhoneWindow", null, "generateLayout",
-					"com.android.internal.policy.impl.PhoneWindow.DecorView", new XC_MethodHook() {
+			findAndHookMethod(CLASS_PHONEWINDOW, null, "generateLayout",
+					CLASS_PHONEWINDOW_DECORVIEW, new XC_MethodHook() {
 
 				@SuppressLint("InlinedApi")
 				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -96,8 +98,14 @@ public class Activities {
 					}
 
 					if (XposedMod.prefs.getBoolean(packageName + Common.PREF_LEGACY_MENU, false)) {
-						window.setFlags(FLAG_NEEDS_MENU_KEY, FLAG_NEEDS_MENU_KEY);
-						setAdditionalInstanceField(window, PROP_LEGACY_MENU, Boolean.TRUE);
+						if (Build.VERSION.SDK_INT >= 22) {
+						     // NEEDS_MENU_SET_TRUE = 1
+						     callMethod(window, "setNeedsMenuKey", 1);
+						}
+						else {
+						     window.setFlags(FLAG_NEEDS_MENU_KEY, FLAG_NEEDS_MENU_KEY);
+						     setAdditionalInstanceField(window, PROP_LEGACY_MENU, Boolean.TRUE);							
+						}
 					}
 
 					int orientation = XposedMod.prefs.getInt(packageName + Common.PREF_ORIENTATION, XposedMod.prefs.getInt(Common.PREF_DEFAULT + Common.PREF_ORIENTATION, 0));
@@ -201,25 +209,43 @@ public class Activities {
 		}
 
 		try {
+			findAndHookMethod(InputMethodService.class, "doStartInput",
+					InputConnection.class, EditorInfo.class, boolean.class, new XC_MethodHook() {
+				@Override
+				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+					EditorInfo info = (EditorInfo) param.args[1];
+					if (info != null && info.packageName != null) {
+						XposedMod.prefs.reload();
+						if (XposedMod.isActive(info.packageName, Common.PREF_NO_FULLSCREEN_IME))
+							info.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
+					}
+				}
+			});
+		} catch (Throwable e) {
+			XposedBridge.log(e);
+		}
+	}
+
+	public static void hookActivitySettingsInSystemServer(ClassLoader classLoader) {
+		try {
 			// Hook one of the several variations of ActivityStack.realStartActivityLocked from different ROMs
 			Method mthRealStartActivityLocked;
 			if (Build.VERSION.SDK_INT <= 18) {
 				try {
-					mthRealStartActivityLocked = findMethodExact("com.android.server.am.ActivityStack", null, "realStartActivityLocked",
+					mthRealStartActivityLocked = findMethodExact("com.android.server.am.ActivityStack", classLoader, "realStartActivityLocked",
 							"com.android.server.am.ActivityRecord", "com.android.server.am.ProcessRecord",
 							boolean.class, boolean.class, boolean.class);
 				} catch (NoSuchMethodError t) {
-					mthRealStartActivityLocked = findMethodExact("com.android.server.am.ActivityStack", null, "realStartActivityLocked",
+					mthRealStartActivityLocked = findMethodExact("com.android.server.am.ActivityStack", classLoader, "realStartActivityLocked",
 							"com.android.server.am.ActivityRecord", "com.android.server.am.ProcessRecord",
 							boolean.class, boolean.class);
 				}
 			} else {
-				mthRealStartActivityLocked = findMethodExact("com.android.server.am.ActivityStackSupervisor", null, "realStartActivityLocked",
+				mthRealStartActivityLocked = findMethodExact("com.android.server.am.ActivityStackSupervisor", classLoader, "realStartActivityLocked",
 						"com.android.server.am.ActivityRecord", "com.android.server.am.ProcessRecord",
 						boolean.class, boolean.class);
 			}
 			hookMethod(mthRealStartActivityLocked, new XC_MethodHook() {
-
 				@Override
 				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 					String pkgName = (String) getObjectField(param.args[0], "packageName");
@@ -245,7 +271,7 @@ public class Activities {
 		}
 
 		try {
-			hookAllConstructors(findClass("com.android.server.am.ActivityRecord", null), new XC_MethodHook() {
+			hookAllConstructors(findClass("com.android.server.am.ActivityRecord", classLoader), new XC_MethodHook() {
 				@Override
 				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 					ActivityInfo aInfo = (ActivityInfo) getObjectField(param.thisObject, "info");
@@ -263,23 +289,6 @@ public class Activities {
 						}
 						else if (recentsMode == Common.PREF_RECENTS_PREVENT)
 							intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-					}
-				}
-			});
-		} catch (Throwable e) {
-			XposedBridge.log(e);
-		}
-
-		try {
-			findAndHookMethod(InputMethodService.class, "doStartInput",
-					InputConnection.class, EditorInfo.class, boolean.class, new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					EditorInfo info = (EditorInfo) param.args[1];
-					if (info != null && info.packageName != null) {
-						XposedMod.prefs.reload();
-						if (XposedMod.isActive(info.packageName, Common.PREF_NO_FULLSCREEN_IME))
-							info.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
 					}
 				}
 			});
