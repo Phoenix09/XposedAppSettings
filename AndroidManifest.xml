@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="de.robv.android.xposed.mods.appsettings"
-    android:versionCode="29"
-    android:versionName="1.10" >
+    android:versionCode="31"
+    android:versionName="1.13" xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk android:minSdkVersion="15" tools:ignore="UsesMinSdkAttributes"/>
 
     <uses-sdk
         android:minSdkVersion="15"
