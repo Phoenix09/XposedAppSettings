@@ -43,8 +43,15 @@ public class Activities {
 
 	private static int FLAG_NEEDS_MENU_KEY = Build.VERSION.SDK_INT >= 22 ? 0 : getStaticIntField(WindowManager.LayoutParams.class, "FLAG_NEEDS_MENU_KEY");
     private static String CLASS_PHONEWINDOW = Build.VERSION.SDK_INT >= 23 ? "com.android.internal.policy.PhoneWindow" : "com.android.internal.policy.impl.PhoneWindow";
-	private static String CLASS_PHONEWINDOW_DECORVIEW = Build.VERSION.SDK_INT >= 23 ? "com.android.internal.policy.PhoneWindow.DecorView" : "com.android.internal.policy.impl.PhoneWindow.DecorView";
+	private static String CLASS_PHONEWINDOW_DECORVIEW = null;
 	public static void hookActivitySettings() {
+		if (Build.VERSION.SDK_INT >= 24) {
+			CLASS_PHONEWINDOW_DECORVIEW = "com.android.internal.policy.DecorView";
+		} else if (Build.VERSION.SDK_INT == 23) {
+			CLASS_PHONEWINDOW_DECORVIEW = "com.android.internal.policy.PhoneWindow.DecorView";
+		} else {
+			CLASS_PHONEWINDOW_DECORVIEW = "com.android.internal.policy.impl.PhoneWindow.DecorView";
+		}
 		try {
 			findAndHookMethod(CLASS_PHONEWINDOW, null, "generateLayout",
 					CLASS_PHONEWINDOW_DECORVIEW, new XC_MethodHook() {
