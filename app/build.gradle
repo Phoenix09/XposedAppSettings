@@ -8,6 +8,9 @@ android {
         applicationId "de.robv.android.xposed.mods.appsettings"
         minSdkVersion 15
         targetSdkVersion 15
+        versionName "1.13"
+        versionCode 31
+        archivesBaseName = "App_Settings-v${versionName}"
     }
 
     buildTypes {
@@ -16,8 +19,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+}
 
-    dependencies {
-        provided 'de.robv.android.xposed:api:82'
-    }
+dependencies {
+    provided 'de.robv.android.xposed:api:82'
 }
