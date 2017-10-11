@@ -13,8 +13,36 @@ android {
         archivesBaseName = "App_Settings-v${versionName}"
     }
 
+    /*
+    If you want to sign your releases, create a file in the root of the project named keystore.properties with this content:
+        storePassword=myStorePassword
+        keyPassword=mykeyPassword
+        keyAlias=myKeyAlias
+        storeFile=myStoreFileLocation
+     */
+
+    def keystorePropertiesFile = rootProject.file("keystore.properties")
+    boolean doSign = keystorePropertiesFile.exists()
+
+    if (doSign) {
+        def keystoreProperties = new Properties()
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+        signingConfigs {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (doSign) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
