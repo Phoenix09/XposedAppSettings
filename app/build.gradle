@@ -8,9 +8,13 @@ android {
         applicationId "de.robv.android.xposed.mods.appsettings"
         minSdkVersion 15
         targetSdkVersion 15
-        versionName "1.13"
-        versionCode 31
+        versionName "1.15"
+        versionCode 33
         archivesBaseName = "App_Settings-v${versionName}"
+    }
+
+    lintOptions{
+        disable 'MissingTranslation'
     }
 
     /*
